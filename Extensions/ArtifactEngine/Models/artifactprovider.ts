@@ -6,6 +6,6 @@ export interface IArtifactProvider {
     getRootItems(): Promise<ArtifactItem[]>;
     getArtifactItems(artifactItem: ArtifactItem): Promise<ArtifactItem[]>;
     getArtifactItem(artifactItem: ArtifactItem): Promise<NodeJS.ReadableStream>;
-    putArtifactItem(artifactItem: ArtifactItem, stream: NodeJS.ReadableStream): Promise<ArtifactItem>;
+    putArtifactItem(artifactItem: ArtifactItem, stream: NodeJS.ReadableStream, excludeFolders?: boolean): Promise<ArtifactItem>;
     dispose(): void;
 }

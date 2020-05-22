@@ -101,9 +101,9 @@ export class ArtifactEngine {
                 Logger.logInfo("Processing " + item.path);
                 sourceProvider.getArtifactItem(item).then((contentStream) => {
                     Logger.logInfo("Got download stream for item: " + item.path);
-                    destProvider.putArtifactItem(item, contentStream)
+                    destProvider.putArtifactItem(item, contentStream, true)
                         .then((item) => {
-                            this.artifactItemStore.updateState(this.getDestinationFileItem(item), models.TicketState.Processed);
+                            this.artifactItemStore.updateState(item, models.TicketState.Processed);
                             resolve();
                         }, (err) => {
                             Logger.logInfo("Error placing file " + item.path + ": " + err);
@@ -172,18 +172,6 @@ export class ArtifactEngine {
     private artifactItemStore: ArtifactItemStore = new ArtifactItemStore();
     private logger: Logger;
     private patternList: string[];
-
-    private getFileName(path: string): string {
-        let regEx: RegExp = new RegExp(/(?!\/).[^/]+$/);
-        let match: RegExpExecArray = regEx.exec(path);
-        return match[0];
-    }
-
-    private getDestinationFileItem (item: models.ArtifactItem): models.ArtifactItem {
-        let copy: models.ArtifactItem = Object.assign(item);
-        copy.path = this.getFileName(item.path);
-        return copy;
-    }
 }
 
 tl.setResourcePath(path.join(path.dirname(__dirname), 'lib.json'));

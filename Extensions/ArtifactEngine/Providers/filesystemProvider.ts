@@ -50,9 +50,15 @@ export class FilesystemProvider implements models.IArtifactProvider {
         return promise;
     }
 
-    public putArtifactItem(item: models.ArtifactItem, stream: NodeJS.ReadableStream): Promise<models.ArtifactItem> {
+    public putArtifactItem(item: models.ArtifactItem, stream: NodeJS.ReadableStream, removeFolders: boolean = false): Promise<models.ArtifactItem> {
         return new Promise((resolve, reject) => {
-            const outputItemPath = path.join(this._rootLocation, item.path);
+            let itemPath: string;
+            if (removeFolders) {
+                itemPath = this.getFileName(item.path);
+            } else {
+                itemPath = item.path;
+            }
+            const outputItemPath = path.join(this._rootLocation, itemPath);
 
             if (item.itemType === models.ItemType.File) {
                 const folder = path.dirname(outputItemPath);
@@ -60,12 +66,12 @@ export class FilesystemProvider implements models.IArtifactProvider {
                     // create parent folder if it has not already been created
                     tl.mkdirP(folder);
 
-                    Logger.logMessage(tl.loc("DownloadingTo", item.path, outputItemPath));
+                    Logger.logMessage(tl.loc("DownloadingTo", itemPath, outputItemPath));
                     const outputStream = fs.createWriteStream(outputItemPath);
                     stream.pipe(outputStream);
                     stream.on("end",
                         () => {
-                            Logger.logMessage(tl.loc("DownloadedTo", item.path, outputItemPath));
+                            Logger.logMessage(tl.loc("DownloadedTo", itemPath, outputItemPath));
                             if (!item.metadata) {
                                 item.metadata = {};
                             }
@@ -140,6 +146,17 @@ export class FilesystemProvider implements models.IArtifactProvider {
         });
 
         return promise;
+    }
+
+    /**
+     * Get file name from full path to this file.
+     * @returns {string} File name without folders
+     * @param {string} path Path to file
+     */
+    private getFileName(path: string): string {
+        let regEx: RegExp = new RegExp(/(?!\/).[^/]+$/);
+        let match: RegExpExecArray = regEx.exec(path);
+        return match[0];
     }
 
     private _rootLocation: string;
