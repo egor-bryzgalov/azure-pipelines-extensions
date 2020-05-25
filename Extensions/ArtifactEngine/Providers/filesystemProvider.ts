@@ -81,7 +81,7 @@ export class FilesystemProvider implements models.IArtifactProvider {
                             reject(error);
                         });
                     outputStream.on("finish", () => {
-                        this.artifactItemStore.updateFileSize(item, outputStream.bytesWritten);this.artifactItemStore.updateFileSize(item, outputStream.bytesWritten);
+                        this.artifactItemStore.updateFileSize(item, outputStream.bytesWritten);
                         resolve(item);
                     });
                 }
