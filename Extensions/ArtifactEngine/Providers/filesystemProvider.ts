@@ -50,28 +50,26 @@ export class FilesystemProvider implements models.IArtifactProvider {
         return promise;
     }
 
-    public putArtifactItem(item: models.ArtifactItem, stream: NodeJS.ReadableStream, removeFolders: boolean = false): Promise<models.ArtifactItem> {
+    public putArtifactItem(item: models.ArtifactItem, stream: NodeJS.ReadableStream): Promise<models.ArtifactItem> {
         return new Promise((resolve, reject) => {
-            let itemPath: string;
-            if (removeFolders) {
-                itemPath = this.getFileName(item.path);
-            } else {
-                itemPath = item.path;
-            }
-            const outputItemPath = path.join(this._rootLocation, itemPath);
+            let outputItemPath = path.join(this._rootLocation, item.path);
 
             if (item.itemType === models.ItemType.File) {
+                const fileName = this.getFileName(item.path);
+                if (fileName) {
+                    outputItemPath = path.join(this._rootLocation, fileName);
+                }
                 const folder = path.dirname(outputItemPath);
                 try {
                     // create parent folder if it has not already been created
                     tl.mkdirP(folder);
 
-                    Logger.logMessage(tl.loc("DownloadingTo", itemPath, outputItemPath));
+                    Logger.logMessage(tl.loc("DownloadingTo", item.path, outputItemPath));
                     const outputStream = fs.createWriteStream(outputItemPath);
                     stream.pipe(outputStream);
                     stream.on("end",
                         () => {
-                            Logger.logMessage(tl.loc("DownloadedTo", itemPath, outputItemPath));
+                            Logger.logMessage(tl.loc("DownloadedTo", item.path, outputItemPath));
                             if (!item.metadata) {
                                 item.metadata = {};
                             }
@@ -83,7 +81,7 @@ export class FilesystemProvider implements models.IArtifactProvider {
                             reject(error);
                         });
                     outputStream.on("finish", () => {
-                        this.artifactItemStore.updateFileSize(item, outputStream.bytesWritten);
+                        this.artifactItemStore.updateFileSize(item, outputStream.bytesWritten);this.artifactItemStore.updateFileSize(item, outputStream.bytesWritten);
                         resolve(item);
                     });
                 }
@@ -156,7 +154,7 @@ export class FilesystemProvider implements models.IArtifactProvider {
     private getFileName(path: string): string {
         let regEx: RegExp = new RegExp(/(?!\/).[^/]+$/);
         let match: RegExpExecArray = regEx.exec(path);
-        return match[0];
+        return match ? match[0] : undefined;
     }
 
     private _rootLocation: string;

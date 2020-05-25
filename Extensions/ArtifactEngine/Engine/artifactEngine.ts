@@ -101,7 +101,7 @@ export class ArtifactEngine {
                 Logger.logInfo("Processing " + item.path);
                 sourceProvider.getArtifactItem(item).then((contentStream) => {
                     Logger.logInfo("Got download stream for item: " + item.path);
-                    destProvider.putArtifactItem(item, contentStream, true)
+                    destProvider.putArtifactItem(item, contentStream)
                         .then((item) => {
                             this.artifactItemStore.updateState(item, models.TicketState.Processed);
                             resolve();
